@@ -1,0 +1,4 @@
+flake.lock
+.direnv/
+.envrc
+*__pycache__

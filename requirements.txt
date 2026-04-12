@@ -1,0 +1,12 @@
+numpy
+opencv-python
+PySide6
+matplotlib
+scipy
+qdarkstyle
+pydicom
+pyvista
+shapely
+plotly
+scikit-image
+scikit-learn
