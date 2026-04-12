@@ -201,4 +201,4 @@ The design of this project is influenced by:
 
 ## License
 
-This project is licensed under the MIT License. See the [`LICENSE`](https://github.com/Tim3720/CvVIA/LICENSE) file for details.
+This project is licensed under the MIT License. See the [`LICENSE`](https://github.com/Tim3720/CvVIA/blob/main/LICENSE) file for details.
