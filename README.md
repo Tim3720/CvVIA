@@ -1,56 +1,39 @@
-# 📊 CvVIA app
+# CvVIA App
 
-A flexible visualization tool for **images and videos** with a powerful **script-based processing system**.
+The **OpenCV Visual Image Analysis (CvVIA) app** is a flexible visualization tool for **images and videos** with a **script-based processing system**.
 
-Define your own processing logic using simple Python scripts — similar to an Arduino-style workflow — and visualize results in real time.
-
----
-
-## ✨ Features
-
-* 🎥 Load and visualize **videos and image sequences**
-* 🧠 **Custom processing scripts** (plug-and-play)
-* 🔍 Automatic **ROI (Region of Interest) handling**
-* 📈 Integrated **Matplotlib visualization**
-* 💾 Export processed data easily
-* 🧩 Modular design for easy extension
+You can define your own processing logic using Python scripts, and the results are visualized in real time without requiring additional visualization code. At the same time, these scripts remain fully usable outside the app, allowing you to integrate them into your own workflows without being tied to the application.
 
 ---
 
-## 🧠 Concept
+## Features
 
-Instead of hardcoding functionality, this app lets you define your own processing pipeline via a Python script.
+* Load and visualize **videos and image sequences**
+* **Custom processing scripts** with automatic reloading on file changes
+* Automatic **ROI (Region of Interest) handling**
+* Integrated **Matplotlib-based visualization**
+* Easy export of processed data
+* Modular architecture for straightforward extension
 
-The app handles:
+---
+
+## Concept
+
+Instead of hardcoding functionality, the app delegates all processing logic to user-defined Python scripts.
+
+The application is responsible for:
 
 * File loading
 * Frame iteration
 * ROI extraction
-* UI & visualization
+* User interface and visualization
+* Automatic script reloading on changes
 
-You focus only on:
-👉 **How the data is processed**
-
----
-
-## 🔄 Processing Lifecycle
-
-Your script follows this structure:
-
-```python
-setup()
-
-for each frame:
-    processed = process_frame(...)
-    for each ROI:
-        process_roi(...)
-
-save_data()
-```
+The user focuses solely on defining **how the data is processed**.
 
 ---
 
-## 📜 Script API
+## Script API
 
 Each script must implement the following functions:
 
@@ -58,7 +41,7 @@ Each script must implement the following functions:
 
 Called once at startup.
 
-Use it to:
+Typical use cases:
 
 * Initialize plots
 * Reset global state
@@ -69,8 +52,8 @@ Use it to:
 
 Called once per frame.
 
-* Input: raw frame
-* Output: processed frame (used for ROI detection)
+* **Input:** raw frame
+* **Output:** processed frame (used for ROI detection)
 
 ---
 
@@ -78,28 +61,28 @@ Called once per frame.
 
 Called for each ROI.
 
-* `roi`: ROI from processed frame
+* `roi`: ROI from the processed frame
 * `roi_org`: original ROI
 * `roi_processed`: processed ROI
-* Returns: visualization image (displayed in UI)
+* **Return value:** visualization image (displayed in the UI)
 
-👉 This is where most of your logic goes.
+This function typically contains the main processing logic.
 
 ---
 
 ### `save_data(fig, save_path)`
 
-Called after processing finishes.
+Called after processing finishes or when triggered by the user.
 
-Use it to:
+Typical use cases:
 
-* Save results
-* Export files
-* Store computed data
+* Save computed results
+* Export data to files
+* Store intermediate or final outputs
 
 ---
 
-## 🧪 Example Script
+## Example Script
 
 A minimal example:
 
@@ -126,9 +109,9 @@ def save_data(fig, save_path):
 
 ---
 
-## 📦 Installation
+## Installation
 
-### Using pip
+Install dependencies using pip:
 
 ```bash
 pip install -r requirements.txt
@@ -136,7 +119,7 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ Usage
+## Usage
 
 ```bash
 python main.py --input <path_to_video_or_images> --script <script.py>
@@ -150,7 +133,7 @@ python main.py --input data/video.mp4 --script scripts/my_script.py
 
 ---
 
-## 🧩 Dependencies
+## Dependencies
 
 Core dependencies include:
 
@@ -160,11 +143,11 @@ Core dependencies include:
 * `matplotlib`
 * `scipy`
 
-(See `requirements.txt` for full list)
+See `requirements.txt` for the full list.
 
 ---
 
-## 🛠️ Development
+## Development
 
 Clone the repository:
 
@@ -173,7 +156,7 @@ git clone https://github.com/yourusername/your-repo.git
 cd your-repo
 ```
 
-Create environment:
+Create a virtual environment and install dependencies:
 
 ```bash
 python -m venv venv
@@ -183,12 +166,12 @@ pip install -r requirements.txt
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
-```id="p3d2w1"
+```
 .
 ├── main.py
-├── scripts/          # User scripts
+├── scripts/          # User-defined processing scripts
 ├── core/             # Core processing logic
 ├── ui/               # GUI components
 ├── utils/            # Helper functions
@@ -197,50 +180,25 @@ pip install -r requirements.txt
 
 ---
 
-## 🎯 Design Goals
+## Design Goals
 
-* 🧩 **Modularity** — plug in new functionality via scripts
-* ⚡ **Fast iteration** — no recompiling, just edit & run
-* 🧠 **User control** — full flexibility in processing
-* 🖥️ **Visualization-first** workflow
-
----
-
-## 🚀 Future Ideas
-
-* Live script reloading 🔄
-* Script marketplace / sharing 📦
-* 3D visualization improvements 🌐
-* GPU acceleration ⚡
+* **Modularity**: Extend functionality through independent scripts
+* **Fast iteration**: Modify scripts without restarting or recompiling
+* **Decoupling**: Processing logic is independent of the application
+* **Visualization-first workflow**: Immediate feedback during development
 
 ---
 
-## 🤝 Contributing
+## Inspiration
 
-Contributions are welcome!
+The design of this project is influenced by:
 
-* Fork the repo
-* Create a feature branch
-* Submit a PR
-
----
-
-## 📄 License
-
-MIT License (or your preferred license)
+* Arduino-style programming (setup + loop structure)
+* Shader-based processing pipelines
+* Scientific and research-oriented scripting workflows
 
 ---
 
-## 💡 Inspiration
+## License
 
-This project follows a philosophy similar to:
-
-* Arduino sketches (setup + loop)
-* Shader programming pipelines
-* Scientific scripting workflows
-
-
-
-## 📄 License
-
-This project is licensed under the MIT License – see the LICENSE file for details.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
