@@ -166,17 +166,10 @@ pip install -r requirements.txt
 
 ---
 
-## Project Structure
+## Status
 
-```
-.
-├── main.py
-├── scripts/          # User-defined processing scripts
-├── core/             # Core processing logic
-├── ui/               # GUI components
-├── utils/            # Helper functions
-└── requirements.txt
-```
+This project is currently under active development.  
+Some features are not yet implemented, and bugs or incomplete functionality may occur.
 
 ---
 
