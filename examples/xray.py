@@ -120,8 +120,11 @@ def setup(fig: Figure):
     axs.clear()
     contours.clear()
     point_clouds.clear()
+    inner_contours.clear()
     ax = fig.add_subplot(1, 1, 1, projection="3d")
     axs.append(ax)
+
+    print("Setup finished, cleared data and plot")
 
 
 # ---------------------------------------------------------------------
@@ -316,3 +319,9 @@ def save_data(fig: Figure, save_path: str):
                 line += "\n"
                 lines.append(line)
         f.writelines(lines)
+
+    print(f"Successfully saved data for {len(point_clouds)} frames.")
+    contours.clear()
+    point_clouds.clear()
+    inner_contours.clear()
+    print("Cleared data")

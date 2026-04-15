@@ -133,9 +133,9 @@ class MainWindow(QMainWindow):
         self.act_reload_script.triggered.connect(self.script_runner.on_reload)
         self.act_save_data.triggered.connect(self.script_runner.save_data)
 
-        # self.act_delete_all_rois.triggered.connect(
-        #     self.source_view.roi_visualizer.delete_all_rois
-        # )
+        self.act_delete_all_rois.triggered.connect(
+            self.source_view.roi_visualizer.delete_all_rois
+        )
 
         # self.source_view.lock_rois.connect(self.roi_manager.lock_rois)
 
