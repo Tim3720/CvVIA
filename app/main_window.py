@@ -55,10 +55,13 @@ class MainWindow(QMainWindow):
         central_layout = QVBoxLayout(central_widget)
         central_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.terminal_splitter = QSplitter(Qt.Orientation.Vertical)
+
+
+        self.view_splitter = QSplitter(Qt.Orientation.Horizontal)
 
         self.source_view = SourceView(self.image_source, self.roi_manager, self)
-        self.main_splitter.addWidget(self.source_view)
+        self.view_splitter.addWidget(self.source_view)
 
         self.tabs = QTabWidget()
         self.frame_output = FrameOutput()
@@ -68,13 +71,16 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.roi_output, "ROIs")
         self.tabs.addTab(self.fig_output, "Plots")
 
-        self.main_splitter.addWidget(self.tabs)
+        self.view_splitter.addWidget(self.tabs)
 
         self.script_output = ScriptOutputView()
 
-        central_layout.addWidget(self.main_splitter, 1)
+        self.terminal_splitter.addWidget(self.view_splitter)
+
+        self.terminal_splitter.addWidget(self.script_output)
+
+        central_layout.addWidget(self.terminal_splitter, 1)
         # central_layout.addStretch()
-        central_layout.addWidget(self.script_output)
 
         self.setCentralWidget(central_widget)
 
