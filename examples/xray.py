@@ -38,7 +38,7 @@ process_frame(frame, idx, fig):
     automatic thresholding (cv2.THRESH_OTSU). This is a preview of how the binary is
     created for each ROI
 
-process_roi(roi, roi_org, roi_processed, roi_idx, idx, fig):
+process_roi(roi, roi_org, roi_processed, roi_idx, idx, roi_keys, fig):
     Contains the main processing logic applied to each ROI:
 
     1. Thresholding:
@@ -163,6 +163,7 @@ def process_roi(
     roi_processed: np.ndarray,
     roi_idx: int,
     idx: int,
+    roi_keys: list,
     fig: Figure,
 ) -> np.ndarray:
     """

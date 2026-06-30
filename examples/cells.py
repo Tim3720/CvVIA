@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from matplotlib.figure import Figure
 
-axs = []
+axs = {}
 last_images = []
 last_rois = {}
 
@@ -53,7 +53,7 @@ def process_roi(
     roi_processed: np.ndarray,
     roi_idx: int,
     idx: int,
-    num_rois: int,
+    roi_keys: list,
     fig: Figure,
 ) -> np.ndarray:
     global axs
@@ -70,16 +70,17 @@ def process_roi(
     #             ax.set_axis_off()
     #         axs.append(ax)
 
+    num_rois = len(roi_keys)
     if len(axs) != num_rois:
         # delete old axes:
-        for ax in axs:
+        for _, ax in axs.items():
             ax.remove()
 
-        axs = []
+        axs = {}
         for i in range(num_rois):
             ax = fig.add_subplot(num_rois + 1, 1, i + 1)
             ax.set_axis_off()
-            axs.append(ax)
+            axs[roi_keys[i]] = ax
 
 
     img = cv2.cvtColor(roi_org, cv2.COLOR_BGR2GRAY)
@@ -112,8 +113,8 @@ def process_roi(
 
     res = np.ones((img.shape[0], img.shape[1], 3), np.uint8) * 255
     res[..., 0] = np.round(ang * 180 / np.pi / 2).astype(np.uint8)
-    res[..., 2] = cv2.normalize(magn, None, 0, 255, cv2.NORM_MINMAX)
-    # res[..., 2] = (np.round(magn, 3) * 10).astype(np.uint8)
+    # res[..., 2] = cv2.normalize(magn, None, 0, 255, cv2.NORM_MINMAX)
+    res[..., 2] = (np.round(magn, 4) * 100).astype(np.uint8)
 
 
     res = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
@@ -125,11 +126,14 @@ def process_roi(
     # res[np.abs(ang - median_ang) < 1.0, 2] = 0
     densities[roi_idx].append(res[..., 2])
 
-    if len(densities[roi_idx]) > 50:
+    if len(densities[roi_idx]) > 30:
         densities[roi_idx].pop(0)
 
     if len(densities[roi_idx]) > 2:
-        axs[2 * roi_idx].imshow(np.mean(densities[roi_idx], axis=0).astype(np.uint8), cmap="inferno")
+        if roi_idx in axs:
+            axs[roi_idx].clear()
+            axs[roi_idx].set_axis_off()
+            axs[roi_idx].imshow(np.mean(densities[roi_idx], axis=0).astype(np.uint8), cmap="inferno")
 
 
     binary = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)

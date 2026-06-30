@@ -179,7 +179,7 @@ class ScriptRunner:
                 roi_processed,
                 idx,
                 frame_org.index,
-                len(self._roi_manager.rois),
+                list(self._roi_manager.rois.keys()),
                 self._fig_output.figure,
             )
             rois.append((res, idx))
