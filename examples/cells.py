@@ -58,29 +58,29 @@ def process_roi(
 ) -> np.ndarray:
     global axs
 
-    # if len(axs) != 2 * num_rois:
-    #     # delete old axes:
-    #     for ax in axs:
-    #         ax.remove()
-    #
-    #     axs = []
-    #     for i in range(2 * num_rois):
-    #         ax = fig.add_subplot(num_rois + 1, 2, i + 1)
-    #         if i % 2 == 0:
-    #             ax.set_axis_off()
-    #         axs.append(ax)
-
     num_rois = len(roi_keys)
     if len(axs) != num_rois:
         # delete old axes:
-        for _, ax in axs.items():
-            ax.remove()
+        for _, ax_set in axs.items():
+            for ax in ax_set:
+                ax.remove()
 
         axs = {}
         for i in range(num_rois):
-            ax = fig.add_subplot(num_rois + 1, 1, i + 1)
-            ax.set_axis_off()
-            axs[roi_keys[i]] = ax
+            ax1 = fig.add_subplot(num_rois + 1, 2, 2 * i + 1)
+            ax2 = fig.add_subplot(num_rois + 1, 2, 2 * i + 2)
+            ax1.set_axis_off()
+            ax2.plot([], [])
+            ax2.set_ylabel("Mean intensity")
+
+            ax3 = ax2.twinx()
+            ax3.plot([], [])
+            ax3.set_ylabel("Directionality")
+
+            ax2.yaxis.label.set_color('blue')
+            ax3.yaxis.label.set_color('red')
+
+            axs[roi_keys[i]] = [ax1, ax2, ax3]
 
 
     img = cv2.cvtColor(roi_org, cv2.COLOR_BGR2GRAY)
@@ -117,7 +117,6 @@ def process_roi(
     res[..., 2] = (np.round(magn, 4) * 100).astype(np.uint8)
 
 
-    res = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
 
     if not roi_idx in densities:
         densities[roi_idx] = []
@@ -125,15 +124,63 @@ def process_roi(
     # median_ang = np.median(ang)
     # res[np.abs(ang - median_ang) < 1.0, 2] = 0
     densities[roi_idx].append(res[..., 2])
+    directionality = res[..., 0].copy()
+
+    res_hsv = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
 
     if len(densities[roi_idx]) > 30:
         densities[roi_idx].pop(0)
 
-    if len(densities[roi_idx]) > 2:
-        if roi_idx in axs:
-            axs[roi_idx].clear()
-            axs[roi_idx].set_axis_off()
-            axs[roi_idx].imshow(np.mean(densities[roi_idx], axis=0).astype(np.uint8), cmap="inferno")
+    if roi_idx in axs:
+        if len(densities[roi_idx]) > 2:
+            axs[roi_idx][0].clear()
+            axs[roi_idx][0].set_axis_off()
+            axs[roi_idx][0].imshow(np.mean(densities[roi_idx], axis=0).astype(np.uint8), cmap="inferno")
+        else:
+            axs[roi_idx][0].clear()
+            axs[roi_idx][0].set_axis_off()
+            axs[roi_idx][0].imshow(densities[roi_idx][-1], cmap="inferno")
+
+
+        mean_intensity_line = axs[roi_idx][1].get_lines()[0]
+        directionality_line = axs[roi_idx][2].get_lines()[0]
+        # axs[roi_idx][1].clear()
+        # axs[roi_idx][2].clear()
+
+        last_density = densities[roi_idx][-1]
+        filtered_indices = np.where(last_density > 1)[0]
+        mean_intensity = np.mean(last_density[filtered_indices])
+
+        x_data = list(mean_intensity_line.get_xdata())
+        y_data = list(mean_intensity_line.get_ydata())
+
+        x_data.append(idx)
+        y_data.append(mean_intensity)
+
+        mean_intensity_line.remove()
+        axs[roi_idx][1].plot(x_data, y_data, label="Mean intensity", color="blue")
+
+        direction_dist, bins = np.histogram(directionality[filtered_indices, 0],
+                                            90, density=True)
+
+        x_data = list(directionality_line.get_xdata())
+        y_data = list(directionality_line.get_ydata())
+
+        max_direction = np.max(direction_dist).astype(np.float64)
+        if np.isnan(max_direction) or max_direction > 1:
+            max_direction = 0
+
+
+        x_data.append(idx)
+        y_data.append(max_direction)
+
+
+        directionality_line.remove()
+        axs[roi_idx][2].plot(x_data, y_data, label="Directionality", color="red")
+
+        # axs[roi_idx][1].legend(loc="upper left")
+        # axs[roi_idx][2].legend(loc="upper right")
+
 
 
     binary = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
@@ -166,7 +213,7 @@ def process_roi(
     #     print(e)
 
 
-    return res
+    return res_hsv
 
 
 def finalize(fig: Figure) -> dict: ...
