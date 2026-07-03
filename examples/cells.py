@@ -1,4 +1,5 @@
 import cv2
+import os
 import numpy as np
 from matplotlib.figure import Figure
 
@@ -7,6 +8,10 @@ last_images = []
 last_rois = {}
 
 densities = {}
+
+mean_intensities = {}
+
+plot_directionality = False
 
 def setup(fig: Figure):
     last_images.clear()
@@ -69,18 +74,24 @@ def process_roi(
         for i in range(num_rois):
             ax1 = fig.add_subplot(num_rois + 1, 2, 2 * i + 1)
             ax2 = fig.add_subplot(num_rois + 1, 2, 2 * i + 2)
+
             ax1.set_axis_off()
+
             ax2.plot([], [])
             ax2.set_ylabel("Mean intensity")
 
-            ax3 = ax2.twinx()
-            ax3.plot([], [])
-            ax3.set_ylabel("Directionality")
+            if plot_directionality:
+                ax2_twin = ax2.twinx()
+                ax2_twin.plot([], [])
+                ax2_twin.set_ylabel("Directionality")
 
-            ax2.yaxis.label.set_color('blue')
-            ax3.yaxis.label.set_color('red')
+                ax2.yaxis.label.set_color('blue')
+                ax2_twin.yaxis.label.set_color('red')
 
-            axs[roi_keys[i]] = [ax1, ax2, ax3]
+
+                axs[roi_keys[i]] = [ax1, ax2, ax2_twin]
+            else:
+                axs[roi_keys[i]] = [ax1, ax2]
 
 
     img = cv2.cvtColor(roi_org, cv2.COLOR_BGR2GRAY)
@@ -141,45 +152,50 @@ def process_roi(
             axs[roi_idx][0].set_axis_off()
             axs[roi_idx][0].imshow(densities[roi_idx][-1], cmap="inferno")
 
+        axs[roi_idx][0].set_title("Mean intensity map")
 
-        mean_intensity_line = axs[roi_idx][1].get_lines()[0]
-        directionality_line = axs[roi_idx][2].get_lines()[0]
-        # axs[roi_idx][1].clear()
-        # axs[roi_idx][2].clear()
+
 
         last_density = densities[roi_idx][-1]
         filtered_indices = np.where(last_density > 1)[0]
-        mean_intensity = np.mean(last_density[filtered_indices])
+        if len(filtered_indices) > 1:
+            mean_intensity_line = axs[roi_idx][1].get_lines()[0]
+            mean_intensity = np.mean(last_density[filtered_indices])
 
-        x_data = list(mean_intensity_line.get_xdata())
-        y_data = list(mean_intensity_line.get_ydata())
+            x_data = list(mean_intensity_line.get_xdata())
+            y_data = list(mean_intensity_line.get_ydata())
 
-        x_data.append(idx)
-        y_data.append(mean_intensity)
+            x_data.append(idx)
+            y_data.append(mean_intensity)
 
-        mean_intensity_line.remove()
-        axs[roi_idx][1].plot(x_data, y_data, label="Mean intensity", color="blue")
+            if not roi_idx in mean_intensities:
+                mean_intensities[roi_idx] = []
 
-        direction_dist, bins = np.histogram(directionality[filtered_indices, 0],
-                                            90, density=True)
+            mean_intensities[roi_idx].append((idx, mean_intensity))
 
-        x_data = list(directionality_line.get_xdata())
-        y_data = list(directionality_line.get_ydata())
+            mean_intensity_line.remove()
+            axs[roi_idx][1].plot(x_data, y_data, label="Mean intensity", color="blue")
 
-        max_direction = np.max(direction_dist).astype(np.float64)
-        if np.isnan(max_direction) or max_direction > 1:
-            max_direction = 0
+            if plot_directionality:
+                directionality_line = axs[roi_idx][2].get_lines()[0]
+                direction_dist, bins = np.histogram(directionality[filtered_indices, 0],
+                                                    90, density=True)
+
+                x_data = list(directionality_line.get_xdata())
+                y_data = list(directionality_line.get_ydata())
+
+                max_direction = np.max(direction_dist).astype(np.float64)
+                if np.isnan(max_direction) or max_direction > 1:
+                    max_direction = 0
 
 
-        x_data.append(idx)
-        y_data.append(max_direction)
+                x_data.append(idx)
+                y_data.append(max_direction)
 
 
-        directionality_line.remove()
-        axs[roi_idx][2].plot(x_data, y_data, label="Directionality", color="red")
-
-        # axs[roi_idx][1].legend(loc="upper left")
-        # axs[roi_idx][2].legend(loc="upper right")
+                directionality_line.remove()
+                axs[roi_idx][2].plot(x_data, y_data, label="Directionality", color="red",
+                                     zorder=10)
 
 
 
@@ -216,4 +232,14 @@ def process_roi(
     return res_hsv
 
 
-def finalize(fig: Figure) -> dict: ...
+def save_data(fig: Figure, save_path: str):
+    i = 0
+    for key, val in mean_intensities.items():
+        i += 1
+        val = np.array(val)
+        np.savetxt(os.path.join(save_path, f"mean_intensity_{i}.csv"), val,
+                   header="Frame Index,Mean Intensity", delimiter=",")
+        
+
+    print("Saved data to", save_path)
+
