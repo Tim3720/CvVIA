@@ -191,7 +191,14 @@ class ImageSource(QObject):
         if self._info is None:
             return
 
-        index = (index + self._info.frame_count) % self._info.frame_count
+        # index = (index + self._info.frame_count) % self._info.frame_count
+
+        if (index < 0):
+            index = self._info.frame_count + index
+
+        if (index >= self._info.frame_count):
+            index = self._info.frame_count
+            return
 
         if self._info.source_type == SourceType.VIDEO:
             frame = self._read_video_frame(index)
