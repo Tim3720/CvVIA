@@ -152,7 +152,7 @@ def process_roi(
             axs[roi_idx][0].set_axis_off()
             axs[roi_idx][0].imshow(densities[roi_idx][-1], cmap="inferno")
 
-        axs[roi_idx][0].set_title("Mean intensity map")
+        axs[roi_idx][0].set_title(f"Mean intensity map ROI {roi_idx}")
 
 
 
@@ -227,6 +227,8 @@ def process_roi(
     #
     # except Exception as e:
     #     print(e)
+
+    fig.set_layout_engine("constrained")
 
 
     return res_hsv

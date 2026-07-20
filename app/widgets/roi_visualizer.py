@@ -1,8 +1,8 @@
 from typing import Optional
 
 from PySide6.QtCore import QRectF
-from PySide6.QtGui import QColor, QMouseEvent, QPen
-from PySide6.QtWidgets import QGraphicsRectItem
+from PySide6.QtGui import QColor, QFont, QMouseEvent, QPen
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem
 
 from ..models.roi import ROI, ROIManager
 from .image_canvas import ImageCanvas, Qt
@@ -15,19 +15,29 @@ class ROIItem(QGraphicsRectItem):
         self.set_flags(False)
         self.frame_rect = frame_rect
 
+        color = QColor("#4fffb0")
+
+        self.label = QGraphicsTextItem("", self)
+        self.label.setDefaultTextColor(color)
+        self.label.setPos(2, 2)
+        font = self.label.font()
+        font.setPointSize(14)
+        self.label.setFont(font)
+
         self.roi = roi
         if not self.roi is None:
             self.setRect(0, 0, self.roi.rect.width(), self.roi.rect.height())
             self.setPos(self.roi.rect.x(), self.roi.rect.y())
             self.roi.rect_changed.connect(self.on_rect_change)
 
+            self.label.setPlainText(str(self.roi.id))
 
-        color = QColor("#4fffb0")
 
         self._pen = QPen(color)
         self._pen.setWidth(2)
         self.setPen(self._pen)
         self.flag_status = True
+
 
     def on_rect_change(self):
         if self.roi is None:
@@ -47,6 +57,7 @@ class ROIItem(QGraphicsRectItem):
                      self.flag_status)
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges,
                      self.flag_status)
+        self.update_label_position()
 
 
     def set_flags(self, value: bool):
@@ -88,6 +99,9 @@ class ROIItem(QGraphicsRectItem):
             self.roi.move_rect(rect)
 
         return super().itemChange(change, value)
+
+    def update_label_position(self):
+        self.label.setPos(2, 2)
 
 
 
@@ -167,6 +181,7 @@ class ROIVisualizer:
 
         rect = QRectF(self._start_point, current_point).normalized()
         self._current_roi.setRect(rect)
+        self._current_roi.update_label_position()
 
 
 
